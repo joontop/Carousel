@@ -5,9 +5,13 @@ export default {
     PREV: 'PREV',
     NEXT: 'NEXT',
   },
-
+  TAG_ATTRIBUTE: {
+    CLASS: 'class',
+  },
   CAROUSEL_DOM_INFORMATION: {
+    CAROUSEL_TAGNAME: 'div',
     CAROUSEL_CLASSNAME: '_carousel',
+    CAROUSEL_DATA_TAGNAME: 'div',
     CAROUSEL_DATA_CLASSNAME: '_carousel_data',
     CAROUSEL_CSS: {
       overflow: 'hidden',

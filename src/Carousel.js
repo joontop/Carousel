@@ -1,25 +1,12 @@
 import CONFIG from './Config';
 import util from './util/Util';
+import Options from './Options';
 
 export default class Carousel {
-  constructor() {
+  constructor(options) {
     this.carousel = null;
-    this.options = {
-      isAutoRolling: false,
-      isBounce: false,
-      isFixHeight: false,
-      isPaginate: false,
-      maxPage: 10,
-      rollingSecond: 5,
-      startIndex: 0,
-      target: null,
-      type: 0,
-      data: [],
-      carouselClassname: CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_CLASSNAME,
-      carouselDataClassname:
-        CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_DATA_CLASSNAME,
-    };
     this.emitter = null;
+    Options.setDatas(options || {});
     this.state = {
       isOnTouch: false,
       isOnRolling: false,
@@ -31,6 +18,10 @@ export default class Carousel {
         current: 0,
         last: 0,
       },
+      time: {
+        end: 0,
+        start: 0,
+      },
       x: {
         end: 0,
         move: 0,
@@ -41,77 +32,92 @@ export default class Carousel {
         move: 0,
         start: 0,
       },
-      time: {
-        end: 0,
-        start: 0,
-      },
     };
   }
 
   start() {
-    if (this.options && this.options.target) {
-      console.log(this.options);
-      // 바운스면 롤링은 false
-      if (this.options.isBounce) {
-        this.options.isAutoRolling = false;
+    if (Options.getTarget()) {
+      if (Options.isBounce()) {
+        Options.setAutoRolling(false);
       }
-
-      // 개수 구하기
-      this.value.idx.last = this.options.data.length - 1;
-      console.log(this.isTwice());
-      this.createCarousel();
-      this.setData();
-      this.setEvent();
-    } else {
-      console.log('taget is not defined.');
     }
+    Object.assign(this.value.idx, { last: Options.getDataLastIndex() });
+    this.createCarousel();
+    this.setData();
+    this.setDataTransition();
+    this.setEvent();
+    console.log(Options.getData());
   }
 
   createCarousel() {
-    if (this.options && this.options.target) {
-      this.options.target.innerHTML = '';
-      this.carousel = document.createElement('div');
-      this.carousel.setAttribute('class', this.options.carouselClassname);
-      Object.assign(
-        this.carousel.style,
-        CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_CSS
-      );
-      this.options.target.appendChild(this.carousel);
-    }
+    Options.getTarget().innerHTML = '';
+    this.carousel = document.createElement(
+      CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_TAGNAME
+    );
+    this.carousel.setAttribute(
+      CONFIG.TAG_ATTRIBUTE.CLASS,
+      Options.getCarouselClassname()
+    );
+    Object.assign(
+      this.carousel.style,
+      CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_CSS
+    );
+    Options.getTarget().appendChild(this.carousel);
   }
 
   setData() {
-    if (!this.carousel) {
-      return;
-    }
-    if (this.options.data.length !== 1) {
+    if (Options.getDataLastIndex() === 0) {
+      this.carousel.innerHTML = this.getDataHTML(0);
+    } else {
       this.setIdx();
-      if (!this.options.isBounce) {
+      if (!Options.isBounce()) {
         this.carousel.innerHTML += this.getDataHTML(this.value.idx.before);
       }
       this.carousel.innerHTML +=
         this.getDataHTML(this.value.idx.current) +
         this.getDataHTML(this.value.idx.after);
-    } else {
-      this.carousel.innerHTML = this.getDataHTML(0);
     }
+  }
+
+  setDataTransition() {
+    const datas = this.carousel.querySelectorAll(
+      '.' + Options.getCarouselDataClassname()
+    );
+    for (let i = 0, j = datas.length; i < j; i++) {
+      Object.assign(
+        datas[i].style,
+        CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_DATA_CSS
+      );
+    }
+    if (Options.getDataLength() > 1) {
+      if (Options.getDataLength === 2) {
+        if (this.value.idx.current === 0) {
+          util.renderCSSTransform(datas[0], '0');
+          util.renderCSSTransform(datas[1], '100%');
+        } else {
+          util.renderCSSTransform(datas[0], '-100%');
+          util.renderCSSTransform(datas[1], '0');
+        }
+      } else {
+        util.renderCSSTransform(datas[0], '-100%');
+        util.renderCSSTransform(datas[1], '0');
+        util.renderCSSTransform(datas[2], '100%');
+      }
+    }
+    console.log(datas);
   }
 
   getDataHTML(idx) {
     return (
       '<div class=' +
-      this.options.carouselDataClassname +
+      Options.getCarouselDataClassname() +
       '>' +
-      this.options.data[idx] +
+      Options.getData()[idx] +
       '</div>'
     );
   }
 
   setCount() {}
-
-  isTwice() {
-    return this.options.data.length === 2;
-  }
 
   setEvent() {
     if (!this.carousel) {
@@ -125,30 +131,73 @@ export default class Carousel {
       document.addEventListener('touchmove', this.onMoveEvent.bind(this));
       document.addEventListener('touchend', this.onEndEvent.bind(this));
     } else {
-      this.carousel.addEventListener(
-        'mousedown',
-        this.onStartEvent.bind(this)
-      );
+      this.carousel.addEventListener('mousedown', this.onStartEvent.bind(this));
       document.addEventListener('mousemove', this.onMoveEvent.bind(this));
       document.addEventListener('mouseup', this.onEndEvent.bind(this));
     }
   }
 
   prev() {
-    if (this.options.isBounce && this.value.idx.current === 0) {
-      return true;
+    if (Options.isBounce() && this.value.idx.current === 0) {
+    } else {
+      if (
+        Options.isBounce() &&
+        this.value.idx.current === this.value.idx.last
+      ) {
+      } else {
+        this.carousel.removeChild(this.carousel.lastChild);
+      }
+      this.value.idx.current--;
+      if (this.value.idx.current < 0) {
+        this.value.idx.current = this.value.idx.last;
+      }
+      this.setIdx();
+      if (Options.isBounce() && this.value.idx.current === 0) {
+      } else {
+        let data = document.createElement(
+          CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_TAGNAME
+        );
+        data.setAttribute(
+          CONFIG.TAG_ATTRIBUTE.CLASS,
+          Options.getCarouselDataClassname()
+        );
+        data.innerHTML = Options.getData()[this.value.idx.before];
+        this.carousel.insertBefore(data, this.carousel.firstChild);
+      }
+      this.setDataTransition();
     }
-    this.value.idx.current--;
   }
 
   next() {
-    if (
-      this.options.isBounce &&
-      this.value.idx.current === this.value.idx.last
-    ) {
-      return true;
+    if (Options.isBounce() && this.value.idx.current === this.value.idx.last) {
+    } else {
+      if (Options.isBounce() && this.value.idx.current === 0) {
+      } else {
+        this.carousel.removeChild(this.carousel.firstChild);
+      }
+      this.value.idx.current++;
+      if (this.value.idx.current > this.value.idx.last) {
+        this.value.idx.current = 0;
+      }
+
+      this.setIdx();
+      if (
+        Options.isBounce() &&
+        this.value.idx.current === this.value.idx.last
+      ) {
+      } else {
+        let data = document.createElement(
+          CONFIG.CAROUSEL_DOM_INFORMATION.CAROUSEL_TAGNAME
+        );
+        data.setAttribute(
+          CONFIG.TAG_ATTRIBUTE.CLASS,
+          Options.getCarouselDataClassname()
+        );
+        data.innerHTML = Options.getData()[this.value.idx.after];
+        this.carousel.appendChild(data);
+      }
+      this.setDataTransition();
     }
-    this.value.idx.current++;
   }
 
   onStartEvent(e) {
@@ -187,10 +236,12 @@ export default class Carousel {
       switch (this.getDirection()) {
         case CONFIG.DIRECTION.PREV: {
           console.log('prev!!');
+          this.prev();
           break;
         }
         case CONFIG.DIRECTION.NEXT: {
           console.log('next!!');
+          this.next();
           break;
         }
       }
@@ -233,12 +284,14 @@ export default class Carousel {
         ? 0
         : this.value.idx.current + 1;
   }
+
   startRolling() {
-    if (this.options.isAutoRolling) {
+    if (Options.isAutoRolling()) {
     }
   }
+
   stopRolling() {
-    if (this.options.isAutoRolling) {
+    if (Options.isAutoRolling()) {
     }
   }
 }
