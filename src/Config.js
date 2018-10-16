@@ -5,6 +5,11 @@ export default {
     PREV: 'PREV',
     NEXT: 'NEXT',
   },
+  PERCENT: {
+    DEFAULT: '0',
+    DOWN: '-100%',
+    UP: '100%',
+  },
   TAG_ATTRIBUTE: {
     CLASS: 'class',
   },
@@ -14,7 +19,8 @@ export default {
     CAROUSEL_DATA_TAGNAME: 'div',
     CAROUSEL_DATA_CLASSNAME: '_carousel_data',
     CAROUSEL_CSS: {
-      overflow: 'hidden',
+      '-webkit-backface-visibility': 'hidden',
+      'backface-visibility': 'hidden',
       position: 'absolute',
       top: 0,
       right: 0,
@@ -33,6 +39,8 @@ export default {
       right: 0,
       bottom: 0,
       left: 0,
+      // '-webkit-transition': '-webkit-transform 0.2s ease-out',
+      // transition: 'transform 0.2s ease-out',
     },
   },
 };
