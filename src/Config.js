@@ -5,11 +5,6 @@ export default {
     PREV: 'PREV',
     NEXT: 'NEXT',
   },
-  PERCENT: {
-    DEFAULT: '0',
-    DOWN: '-100%',
-    UP: '100%',
-  },
   TAG_ATTRIBUTE: {
     CLASS: 'class',
   },

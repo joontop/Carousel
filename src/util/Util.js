@@ -4,9 +4,7 @@ export default (() => {
   const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
-    )
-      ? true
-      : false;
+    );
   };
 
   function setTransitionPrefix() {
@@ -34,9 +32,17 @@ export default (() => {
     }
   }
 
+  function getPageXY(e) {
+    return {
+      x: isMobile() ? e.changedTouches[0].pageX : e.pageX,
+      y: isMobile() ? e.changedTouches[0].pageY : e.pageY,
+    };
+  }
+
   return {
     isMobile,
     setTransitionPrefix,
     setTransformPrefix,
+    getPageXY,
   };
 })();

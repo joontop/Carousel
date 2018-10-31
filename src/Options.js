@@ -1,5 +1,4 @@
 import CONFIG from './Config';
-import Util from './util/Util';
 
 class Options {
   constructor() {
@@ -17,6 +16,8 @@ class Options {
       startIndex: 0,
       target: null,
       transitionSeconds: 0.2,
+      limitVelocity: 0.5,
+      moveRange: 0.3,
       type: 0,
     };
   }
@@ -25,7 +26,7 @@ class Options {
     // 사용자가 설정한 옵션을 가져옴
     Object.assign(this.options, datas);
 
-    // bouce 일때는 autoRolling 이 꺼져있어야함
+    // bounce 일때는 autoRolling 이 꺼져있어야함
     if (this.options.isBounce) {
       this.options.isAutoRolling = false;
     }
@@ -38,6 +39,14 @@ class Options {
         this.options.data[1],
       ];
     }
+
+    // moveRange 값 세팅
+    if (this.options.moveRange > 1) {
+      this.options.moveRange = 1;
+    } else if (this.options.moveRange < 0.1) {
+      this.options.moveRange = 0.1;
+    }
+    this.options.moveRange = this.options.moveRange.toFixed(2);
   }
 
   getCarouselClassname() {
@@ -64,6 +73,18 @@ class Options {
     return this.options.isAutoRolling;
   }
 
+  getMoveRange() {
+    return this.options.moveRange;
+  }
+
+  getStartIndex() {
+    return this.options.startIndex;
+  }
+
+  getRollingSecond() {
+    return this.options.rollingSecond;
+  }
+
   getIsBounce() {
     return this.options.isBounce;
   }
@@ -73,7 +94,11 @@ class Options {
   }
 
   getTransitionSeconds() {
-    return this.options.getTransitionSeconds();
+    return this.options.transitionSeconds;
+  }
+
+  getLimitVelocity() {
+    return this.options.limitVelocity;
   }
 }
 
