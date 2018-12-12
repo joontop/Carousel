@@ -5,9 +5,11 @@ const version = require('./package.json').version;
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'build'),
-    publicPath: '/build/',
-    filename: 'carousel.js',
+    path: path.resolve(__dirname, 'lib'),
+    publicPath: '/lib/',
+    filename: 'index.js',
+    library: 'carousel',
+    libraryTarget: 'umd',
   },
   module: {
     rules: [
@@ -17,9 +19,6 @@ module.exports = {
         exclude: /(node_modules)|(build)/,
         use: {
           loader: 'babel-loader',
-          options: {
-            presets: ['env'],
-          },
         },
       },
     ],
